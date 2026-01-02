@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import date
 from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
@@ -29,7 +32,7 @@ This will install the packages from the requirements.txt for this project.
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
@@ -56,7 +59,10 @@ gravatar = Gravatar(app,
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    "DB_URI",
+    "sqlite:///posts.db"
+)
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -115,7 +121,7 @@ def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # If id is not 1 then return abort with 403 error
-        if current_user.id != 1:
+        if not current_user.is_authenticated or current_user.id != 1:
             return abort(403)
         # Otherwise continue with the route function
         return f(*args, **kwargs)
@@ -299,4 +305,5 @@ def contact():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=False, port=5001)
+
