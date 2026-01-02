@@ -38,10 +38,12 @@ def gravatar_url(email, size=100):
 class Base(DeclarativeBase):
     pass
 
+# Use DB_URI from environment, default to SQLite locally
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     "DB_URI",
     "sqlite:///posts.db"
 )
+
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
